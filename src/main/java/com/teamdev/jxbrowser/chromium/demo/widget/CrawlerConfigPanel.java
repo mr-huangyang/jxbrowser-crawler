@@ -4,23 +4,18 @@ import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  *
  */
-public class CrawlerConfigPanel extends JPanel implements ActionListener {
+public class CrawlerConfigPanel extends JPanel  {
 
     private JTextField sft = new JTextField(4);
     private JTextField slt = new JTextField(4);
     private JTextField goTo = new JTextField(20);
     private JTextField pageNo = new JTextField(4);
-
-
-
+    private JTextField fileName = new JTextField(10);
     private int sleep = 500 ; //抓取间隔
-    private String fileName ; //抓取后生成的文件名
 
 
     //private Crawler crawler ;
@@ -29,12 +24,12 @@ public class CrawlerConfigPanel extends JPanel implements ActionListener {
 
      //   this.crawler = crawler ;
 
-        setBorder(BorderFactory.createEtchedBorder());
+       // setBorder(BorderFactory.createEtchedBorder());
+
+        setBorder(BorderFactory.createTitledBorder("页面表格数据抓取配置"));
 
         setLayout(new FlowLayout(FlowLayout.CENTER));
-        sft.addActionListener(this);
-        slt.addActionListener(this);
-        JButton button = new JButton("抓取数据");
+        JButton button = new JButton("抓取Table数据");
         sft.setText("0");
         slt.setText("0");
         pageNo.setText("0");
@@ -52,10 +47,12 @@ public class CrawlerConfigPanel extends JPanel implements ActionListener {
         add(goTo);
 
 
-        add(new JLabel(",自动翻页数:"));
+        add(new JLabel(",翻页数:"));
         add(pageNo);
 
         add(button);
+
+        fileName.setText("crawler-excel");
 
         button.addActionListener(e->{
 
@@ -86,18 +83,14 @@ public class CrawlerConfigPanel extends JPanel implements ActionListener {
     }
 
     public String getFileName() {
-        return fileName;
+        return this.fileName.getText();
     }
 
     public void setFileName(String fileName) {
-        this.fileName = fileName;
+        this.fileName.setText(fileName);
     }
     public String getGoToExpression(){
         return goTo.getText();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-    }
 }

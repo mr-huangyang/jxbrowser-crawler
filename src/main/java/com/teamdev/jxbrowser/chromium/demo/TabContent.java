@@ -71,9 +71,9 @@ public class TabContent extends JPanel implements Crawler {
 
         container.setPreferredSize(new Dimension(1000,1000));
 
-        add(branchContainer);
-        add(configPanel);
         add(toolBar);
+        add(configPanel);
+        add(branchContainer);
         add(container);
     }
 
@@ -286,7 +286,7 @@ public class TabContent extends JPanel implements Crawler {
         if(isTableHeadExist() && rows.size() > 0){
             rows.remove(0);
         }
-        Excel.getFile(this.configPanel.getFileName() + ".xlsx").save(rows);
+        Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
 
         this.count();
         LOGGER.info("已抓取第[{}]页",this.getCount());
