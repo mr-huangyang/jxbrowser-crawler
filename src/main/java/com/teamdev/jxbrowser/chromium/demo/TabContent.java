@@ -17,7 +17,6 @@ import com.teamdev.jxbrowser.chromium.dom.*;
 import com.teamdev.jxbrowser.chromium.dom.events.DOMEventType;
 import com.teamdev.jxbrowser.chromium.events.*;
 import com.teamdev.jxbrowser.chromium.swing.BrowserView;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,16 +40,14 @@ public class TabContent extends JPanel implements Crawler {
     private final JComponent jsConsole;
     private final JComponent container;
     private final JComponent browserContainer;
-    private final ElementBranchPanel branchContainer  ;
-    private final CrawlerConfigPanel configPanel ;
+    private final ElementBranchPanel branchContainer;
+    private final CrawlerConfigPanel configPanel;
 
 
-    private boolean headExistFlag = false;
-    private boolean running = false ;
+    private boolean running = false;
     private int counting;
 
-    private boolean block = true ;
-
+    private boolean block = true;
 
 
     public TabContent(final BrowserView browserView) {
@@ -67,9 +64,9 @@ public class TabContent extends JPanel implements Crawler {
         container = new JPanel(new BorderLayout());
         container.add(browserContainer, BorderLayout.CENTER);
 
-        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        container.setPreferredSize(new Dimension(1000,1000));
+        container.setPreferredSize(new Dimension(1000, 1000));
 
         add(toolBar);
         add(configPanel);
@@ -139,7 +136,7 @@ public class TabContent extends JPanel implements Crawler {
     }
 
 
-    private  void addBrowserLoadListener(){
+    private void addBrowserLoadListener() {
         browserView.getBrowser().addLoadListener(new LoadAdapter() {
             @Override
             public void onStartLoadingFrame(StartLoadingEvent event) {
@@ -168,7 +165,7 @@ public class TabContent extends JPanel implements Crawler {
             public void onFailLoadingFrame(FailLoadingEvent event) {
                 NetError errorCode = event.getErrorCode();
                 if (event.isMainFrame()) {
-                    LOGGER.info("Main frame has failed loading: {}" ,errorCode);
+                    LOGGER.info("Main frame has failed loading: {}", errorCode);
                 }
             }
 
@@ -180,14 +177,16 @@ public class TabContent extends JPanel implements Crawler {
             public void onDocumentLoadedInFrame(FrameLoadEvent event) {
                 // branchContainer.clear();//清除
                 java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
-                nodes.forEach(t->{
+                nodes.forEach(t -> {
                     addOnclickListener(t);
                 });
 
                 boolean state = isRunning();
-                if(state){
-                    doCrawler();
-                    block = false ;
+                if (state) {
+                    List<List<String>> rows= doCrawler();
+                    rows.remove(0);//后续保存时去掉表头
+                    saveRows(rows);
+                    block = false;
                 }
             }
 
@@ -200,20 +199,20 @@ public class TabContent extends JPanel implements Crawler {
 
             }
 
-            private void addOnclickListener(DOMNode node){
+            private void addOnclickListener(DOMNode node) {
 
                 TabContent tc = TabContent.this;
 
-                node.addEventListener(DOMEventType.OnClick , domEvent -> {
+                node.addEventListener(DOMEventType.OnClick, domEvent -> {
                     domEvent.stopPropagation();
-                    DOMElement element = (DOMElement) node ;
+                    DOMElement element = (DOMElement) node;
                     trackBranch(element);
                     tc.branchContainer.redraw();
 
                 }, false);
                 java.util.List<DOMNode> children = node.getChildren();
-                if(children==null||children.isEmpty()) return ;
-                children.forEach(n->{
+                if (children == null || children.isEmpty()) return;
+                children.forEach(n -> {
                     addOnclickListener(n);
                 });
             }
@@ -222,45 +221,47 @@ public class TabContent extends JPanel implements Crawler {
     }
 
 
-
-    private  void trackBranch(DOMNode element){
-        if(element == null) return;
+    private void trackBranch(DOMNode element) {
+        if (element == null) return;
         this.branchContainer.clear().push(new DOMElementWrapper((DOMElement) element));
-        while (true){
-            DOMNode parent =  element.getParent();
-            if(parent==null ){
+        while (true) {
+            DOMNode parent = element.getParent();
+            if (parent == null) {
                 break;
             }
-            if(parent.getNodeType().ordinal() != DOMNodeType.DocumentNode.ordinal()){
+            if (parent.getNodeType().ordinal() != DOMNodeType.DocumentNode.ordinal()) {
                 this.branchContainer.push(new DOMElementWrapper((DOMElement) parent));
             }
-            element =  parent ;
+            element = parent;
         }
 
+    }
+
+    private void saveRows(List<List<String>> rows) {
+        Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
     }
 
     @Override
     public void start() {
-        this.running = true ;
+        this.running = true;
 
         //首先获取目标table
-        doCrawler();
-
-        setTableHeadExist(true);
+        List<List<String>> rows = doCrawler();
+        saveRows(rows);
         int pageNo = configPanel.getPageNo();
         String goToExpression = configPanel.getGoToExpression();
 
-        for (int j = 0  ; j < pageNo  ; j++ ){
-                this.browserView.getBrowser().executeJavaScript(goToExpression.replace("$1",(j+2)+""));
-                while (block){
-                    ThreadUtil.sleep(this.configPanel.getSleep());
-                }
-                block = true ;
+        for (int j = 0; j < pageNo; j++) {
+            this.browserView.getBrowser().executeJavaScript(goToExpression.replace("$1", (j + 2) + ""));
+            while (block) {
+                ThreadUtil.sleep(this.configPanel.getSleep());
+            }
+            block = true;
         }
     }
 
 
-    private void doCrawler(){
+    private List<List<String>> doCrawler() {
         DOMElement element = this.branchContainer.getLockedElement();
         String table = XpathUtility.xpath(element);
 
@@ -272,24 +273,23 @@ public class TabContent extends JPanel implements Crawler {
         int skipFirst = this.configPanel.getSkipFirst();
         int skipLast = this.configPanel.getSkipLast();
         int size = tr.size() - (skipLast == 0 ? 0 : skipLast);
-        for (int i = (skipFirst==0?0:skipFirst); i < size; i++){
+        for (int i = (skipFirst == 0 ? 0 : skipFirst); i < size; i++) {
 
             List<DOMElement> tds = tr.get(i).findElements(By.tagName("td"));
+            if (tds == null || tds.isEmpty()) {
+                tds = tr.get(i).findElements(By.tagName("th"));
+            }
             List<String> cells = new ArrayList<>();
-            tds.forEach(ele->{
+            tds.forEach(ele -> {
                 cells.add(ele.getInnerText());
             });
-            if(! cells.isEmpty()){
+            if (!cells.isEmpty()) {
                 rows.add(cells);
             }
         }
-        if(isTableHeadExist() && rows.size() > 0){
-            rows.remove(0);
-        }
-        Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
-
         this.count();
-        LOGGER.info("已抓取第[{}]页",this.getCount());
+        LOGGER.info("已抓取第[{}]页", this.getCount());
+        return rows;
     }
 
 
@@ -300,26 +300,17 @@ public class TabContent extends JPanel implements Crawler {
 
     @Override
     public int getCount() {
-        return counting ;
+        return counting;
     }
 
     @Override
     public boolean isRunning() {
-          return this.running;
+        return this.running;
     }
 
     @Override
     public void stop() {
-        this.running = false ;
+        this.running = false;
     }
 
-    @Override
-    public boolean isTableHeadExist() {
-        return this.headExistFlag;
-    }
-
-    @Override
-    public void setTableHeadExist(boolean flag) {
-        this.headExistFlag = flag ;
-    }
 }

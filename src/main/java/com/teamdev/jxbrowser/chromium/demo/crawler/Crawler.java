@@ -15,8 +15,4 @@ public interface Crawler {
 
     void stop();
 
-    boolean isTableHeadExist();
-
-    void setTableHeadExist(boolean flag);
-
 }
