@@ -7,9 +7,8 @@
 package com.teamdev.jxbrowser.chromium.demo;
 
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
+import com.teamdev.jxbrowser.chromium.demo.crawler.TableCrawler;
 import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
-import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
-import com.teamdev.jxbrowser.chromium.demo.util.XpathUtility;
 import com.teamdev.jxbrowser.chromium.demo.vo.DOMElementWrapper;
 import com.teamdev.jxbrowser.chromium.demo.widget.CrawlerConfigPanel;
 import com.teamdev.jxbrowser.chromium.demo.widget.ElementBranchPanel;
@@ -24,13 +23,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author TeamDev Ltd.
  */
-public class TabContent extends JPanel implements Crawler {
+public class TabContent extends JPanel  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TabContent.class);
 
@@ -43,18 +41,17 @@ public class TabContent extends JPanel implements Crawler {
     private final ElementBranchPanel branchContainer;
     private final CrawlerConfigPanel configPanel;
 
-
-    private boolean running = false;
-    private int counting;
-
-    private boolean block = true;
+    private final Crawler tableCrawler ;
 
 
     public TabContent(final BrowserView browserView) {
 
         this.browserView = browserView;
+
         branchContainer = new ElementBranchPanel();
-        configPanel = new CrawlerConfigPanel(this);
+        configPanel = new CrawlerConfigPanel();
+        tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
+        configPanel.setCrawler(tableCrawler);
 
         addBrowserLoadListener();
         browserContainer = createBrowserContainer();
@@ -72,6 +69,7 @@ public class TabContent extends JPanel implements Crawler {
         add(configPanel);
         add(branchContainer);
         add(container);
+
     }
 
 
@@ -175,18 +173,17 @@ public class TabContent extends JPanel implements Crawler {
              */
             @Override
             public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-                // branchContainer.clear();//清除
                 java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
                 nodes.forEach(t -> {
                     addOnclickListener(t);
                 });
 
-                boolean state = isRunning();
+                boolean state = tableCrawler.isRunning();
                 if (state) {
-                    List<List<String>> rows= doCrawler();
+                    List<List<String>> rows= tableCrawler.doCrawler();
                     rows.remove(0);//后续保存时去掉表头
                     saveRows(rows);
-                    block = false;
+                    tableCrawler.unblock();
                 }
             }
 
@@ -239,78 +236,6 @@ public class TabContent extends JPanel implements Crawler {
 
     private void saveRows(List<List<String>> rows) {
         Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
-    }
-
-    @Override
-    public void start() {
-        this.running = true;
-
-        //首先获取目标table
-        List<List<String>> rows = doCrawler();
-        saveRows(rows);
-        int pageNo = configPanel.getPageNo();
-        String goToExpression = configPanel.getGoToExpression();
-
-        for (int j = 0; j < pageNo; j++) {
-            this.browserView.getBrowser().executeJavaScript(goToExpression.replace("$1", (j + 2) + ""));
-            while (block) {
-                ThreadUtil.sleep(this.configPanel.getSleep());
-            }
-            block = true;
-        }
-    }
-
-
-    private List<List<String>> doCrawler() {
-        DOMElement element = this.branchContainer.getLockedElement();
-        String table = XpathUtility.xpath(element);
-
-        DOMDocument document = this.browserView.getBrowser().getDocument();
-        DOMElement dataElement = document.findElement(By.xpath(table));
-        java.util.List<DOMElement> tr = dataElement.findElements(By.tagName("tr"));
-        List<List<String>> rows = new ArrayList<>();
-
-        int skipFirst = this.configPanel.getSkipFirst();
-        int skipLast = this.configPanel.getSkipLast();
-        int size = tr.size() - (skipLast == 0 ? 0 : skipLast);
-        for (int i = (skipFirst == 0 ? 0 : skipFirst); i < size; i++) {
-
-            List<DOMElement> tds = tr.get(i).findElements(By.tagName("td"));
-            if (tds == null || tds.isEmpty()) {
-                tds = tr.get(i).findElements(By.tagName("th"));
-            }
-            List<String> cells = new ArrayList<>();
-            tds.forEach(ele -> {
-                cells.add(ele.getInnerText());
-            });
-            if (!cells.isEmpty()) {
-                rows.add(cells);
-            }
-        }
-        this.count();
-        LOGGER.info("已抓取第[{}]页", this.getCount());
-        return rows;
-    }
-
-
-    @Override
-    public void count() {
-        this.counting++;
-    }
-
-    @Override
-    public int getCount() {
-        return counting;
-    }
-
-    @Override
-    public boolean isRunning() {
-        return this.running;
-    }
-
-    @Override
-    public void stop() {
-        this.running = false;
     }
 
 }

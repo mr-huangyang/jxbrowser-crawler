@@ -1,6 +1,7 @@
 package com.teamdev.jxbrowser.chromium.demo.widget;
 
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,23 +13,30 @@ public class CrawlerConfigPanel extends JPanel  {
 
     private JTextField sft = new JTextField(4);
     private JTextField slt = new JTextField(4);
-    private JTextField goTo = new JTextField(20);
+    private JTextField goTo = new JTextField(15);
     private JTextField pageNo = new JTextField(4);
-    private JTextField fileName = new JTextField(10);
-    private int sleep = 500 ; //抓取间隔
+    private JTextField internal = new JTextField(4);
+    private JTextField fileName = new JTextField(20);
 
+    private JRadioButton asyncType = new JRadioButton("Ajax");
 
-    //private Crawler crawler ;
+    private Crawler crawler ;
 
-    public CrawlerConfigPanel(final Crawler crawler){
+    public CrawlerConfigPanel(){
+        init();
+    }
 
-     //   this.crawler = crawler ;
+    public String validateConfig(){
+        if(StringUtils.isBlank(fileName.getText())){
+            return "文件名称必须填写";
+        }
+        return "";
+    }
 
-       // setBorder(BorderFactory.createEtchedBorder());
-
+    private void init(){
         setBorder(BorderFactory.createTitledBorder("页面表格数据抓取配置"));
 
-        setLayout(new FlowLayout(FlowLayout.CENTER));
+        setLayout(new FlowLayout(FlowLayout.LEADING));
         JButton button = new JButton("抓取Table数据");
         sft.setText("0");
         slt.setText("0");
@@ -43,26 +51,33 @@ public class CrawlerConfigPanel extends JPanel  {
         add(slt);
         add(new JLabel("行 , "));
 
-        add(new JLabel("翻页表达式:"));
+        add(new JLabel("翻页JS:"));
         add(goTo);
+        add(new JLabel(","));
 
-
+        add(asyncType);
         add(new JLabel(",翻页数:"));
         add(pageNo);
 
+        add(new JLabel("翻页间隔:"));
+        internal.setText("1");
+        add(internal);
+        add(new JLabel("秒,"));
+
+        add(new JLabel("文件名称:"));
+        add(fileName);
+
         add(button);
 
-        fileName.setText("crawler-excel");
 
         button.addActionListener(e->{
-
-            // 验证  todo
-            crawler.start();
+            this.crawler.start();
         });
-
-
     }
 
+    public void setCrawler(Crawler crawler) {
+        this.crawler = crawler;
+    }
 
     public int getSkipFirst(){
         return Integer.valueOf(this.sft.getText());
@@ -79,7 +94,7 @@ public class CrawlerConfigPanel extends JPanel  {
 
 
     public int getSleep(){
-        return this.sleep ;
+        return Integer.valueOf(internal.getText()) * 1000 ;
     }
 
     public String getFileName() {
@@ -93,4 +108,7 @@ public class CrawlerConfigPanel extends JPanel  {
         return goTo.getText();
     }
 
+    public boolean isAsyncPage() {
+        return asyncType.isSelected();
+    }
 }

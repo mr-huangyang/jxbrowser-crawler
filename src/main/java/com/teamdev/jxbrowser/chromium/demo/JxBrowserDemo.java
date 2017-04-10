@@ -42,7 +42,7 @@ public class JxBrowserDemo {
         insertTab(tabbedPane, TabFactory.createFirstTab());
         insertNewTabButton(tabbedPane);
 
-        JFrame frame = new JFrame("JxBrowser Demo");
+        JFrame frame = new JFrame("简易爬虫工具-Table");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @SuppressWarnings("CallToSystemExit")
@@ -54,10 +54,17 @@ public class JxBrowserDemo {
                 }
             }
         });
+        Toolkit kit = Toolkit.getDefaultToolkit();
+        Dimension dimension = kit.getScreenSize();
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setBounds(0, 0, dimension.width, dimension.height);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setUndecorated(false);
+
         frame.add(tabbedPane, BorderLayout.CENTER);
-        frame.setSize(1024, 700);
         frame.setLocationRelativeTo(null);
         frame.setIconImage(Resources.getIcon("jxbrowser16x16.png").getImage());
+
         frame.setVisible(true);
     }
 

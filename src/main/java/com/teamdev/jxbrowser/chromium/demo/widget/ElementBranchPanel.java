@@ -23,6 +23,7 @@ public class ElementBranchPanel extends JPanel {
     public ElementBranchPanel(){
         super();
         setLayout(new FlowLayout());
+        setBorder(BorderFactory.createTitledBorder("点击html,选择要抓取的Table元素"));
         this.nodes = new ArrayList<>();
     }
 
@@ -66,6 +67,9 @@ public class ElementBranchPanel extends JPanel {
     }
 
     public DOMElement getLockedElement(){
+        if(this.nodes.isEmpty()){
+            return null;
+        }
         return this.nodes.get(this.clickedIndex).getElement();
     }
 
