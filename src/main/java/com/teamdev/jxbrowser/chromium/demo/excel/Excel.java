@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 /**
+ * 抓取的数据默认保存在 /tmp/excel目录,后续可配置
  *
  */
 public class Excel {
@@ -56,7 +57,7 @@ public class Excel {
     private void save(Workbook workBook ,List<String> cells){
         Sheet she = workBook.getSheetAt(0);
         int lastRow = she.getPhysicalNumberOfRows();
-        if (lastRow > 60000) {//60000
+        if (lastRow > 60000) {//excel最大不超过60000行数据
             this.fileIndex++;
             fileName = fileName.replace(".xlsx", "-" + this.fileIndex + ".xlsx");
             workBook = this.getWorkBook(fileName);

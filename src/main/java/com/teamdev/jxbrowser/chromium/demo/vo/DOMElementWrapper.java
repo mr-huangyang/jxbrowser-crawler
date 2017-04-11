@@ -4,7 +4,7 @@ import com.teamdev.jxbrowser.chromium.dom.DOMElement;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Created by huangyang on 17/3/31.
+ *
  */
 public class DOMElementWrapper  {
 
@@ -36,7 +36,7 @@ public class DOMElementWrapper  {
         }
     }
 
-    public void setMarkTargetStyle(){
+    public void highlight(){
          element.setAttribute("style", this.originalStyle + " ; " + "border:red dashed 1px;");
     }
 

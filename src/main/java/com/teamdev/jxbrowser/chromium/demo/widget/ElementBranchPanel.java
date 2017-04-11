@@ -23,7 +23,7 @@ public class ElementBranchPanel extends JPanel {
     public ElementBranchPanel(){
         super();
         setLayout(new FlowLayout());
-        setBorder(BorderFactory.createTitledBorder("点击html,选择要抓取的Table元素"));
+        setBorder(BorderFactory.createTitledBorder("点击页面,选择要抓取的Table元素"));
         this.nodes = new ArrayList<>();
     }
 
@@ -54,16 +54,16 @@ public class ElementBranchPanel extends JPanel {
 
 
     public synchronized void redraw(){
-        removeAll();
-        if(nodes==null ) return;
-        int size = nodes.size();
-        for (int i = 0; i < size; i++){
-            int index = size - i - 1;
-            JLabel label = new JLabel( nodes.get(index).getNodeName().concat("/"));
-            label.addMouseListener(new ClickListenerImpl(this,index,i));
-            add(label);
-        }
-        this.updateUI();
+            removeAll();
+            if(nodes==null ) return;
+            int size = nodes.size();
+            for (int i = 0; i < size; i++){
+                int index = size - i - 1;
+                JLabel label = new JLabel( nodes.get(index).getNodeName().concat("/"));
+                label.addMouseListener(new ClickListenerImpl(this,index,i));
+                add(label);
+            }
+            updateUI();
     }
 
     public DOMElement getLockedElement(){
@@ -91,7 +91,7 @@ public class ElementBranchPanel extends JPanel {
              this.context.setClickedIndex(this.targetIndex);
              this.context.getComponent(this.componentIndex).setForeground(Color.red);
 
-             this.context.nodes.get(this.targetIndex).setMarkTargetStyle();
+             this.context.nodes.get(this.targetIndex).highlight();
              this.context.resetOtherStyle();
         }
 
@@ -115,7 +115,5 @@ public class ElementBranchPanel extends JPanel {
 
         }
     }
-
-
 
 }
