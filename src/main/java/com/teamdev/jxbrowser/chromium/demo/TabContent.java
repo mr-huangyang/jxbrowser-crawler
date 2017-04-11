@@ -173,18 +173,23 @@ public class TabContent extends JPanel  {
              */
             @Override
             public void onDocumentLoadedInFrame(FrameLoadEvent event) {
-                java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
-                nodes.forEach(t -> {
-                    addOnclickListener(t);
+
+                SwingUtilities.invokeLater(()->{
+
+                    java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
+                    nodes.forEach(t -> {
+                        addOnclickListener(t);
+                    });
+
+                    boolean state = tableCrawler.isRunning();
+                    if (state) {
+                        List<List<String>> rows= tableCrawler.doCrawler();
+                        rows.remove(0);//后续保存时去掉表头
+                        saveRows(rows);
+                        tableCrawler.unblock();
+                    }
                 });
 
-                boolean state = tableCrawler.isRunning();
-                if (state) {
-                    List<List<String>> rows= tableCrawler.doCrawler();
-                    rows.remove(0);//后续保存时去掉表头
-                    saveRows(rows);
-                    tableCrawler.unblock();
-                }
             }
 
             /**

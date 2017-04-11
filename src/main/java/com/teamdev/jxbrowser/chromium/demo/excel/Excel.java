@@ -94,11 +94,10 @@ public class Excel {
                 workbook = new XSSFWorkbook();
                 workbook.createSheet();
                 workbook.write(Files.newOutputStream(Paths.get(path)));
-                close(workbook);
+            }else {
+                //读取文件
+                workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(path)));
             }
-
-            //读取文件
-            workbook = new XSSFWorkbook(Files.newInputStream(Paths.get(path)));
             return workbook;
 
         } catch (Exception e) {

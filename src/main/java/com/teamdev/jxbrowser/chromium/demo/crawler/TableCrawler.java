@@ -20,64 +20,67 @@ import java.util.List;
 /**
  * table data crawler
  */
-public class TableCrawler implements  Crawler {
+public class TableCrawler implements Crawler {
 
-    private static  final Logger LOGGER = LoggerFactory.getLogger(TableCrawler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TableCrawler.class);
 
     private boolean running = false;
     private int counting;
-    private boolean block = true ;
+    private boolean block = true;
 
     private ElementBranchPanel branchPanel;
     private CrawlerConfigPanel configPanel;
-    private Browser browser ;
+    private Browser browser;
 
 
-    public TableCrawler(Browser browser , ElementBranchPanel branchPanel , CrawlerConfigPanel configPanel){
+    public TableCrawler(Browser browser, ElementBranchPanel branchPanel, CrawlerConfigPanel configPanel) {
         this.browser = browser;
-        this.branchPanel = branchPanel ;
-        this.configPanel = configPanel ;
+        this.branchPanel = branchPanel;
+        this.configPanel = configPanel;
     }
 
     @Override
     public void start() {
 
         String s = configPanel.validateConfig();
-        if(StringUtils.isNotBlank(s)){
-            browser.executeJavaScript(String.format("alert('%s')",s));
-            return ;
+        if (StringUtils.isNotBlank(s)) {
+            browser.executeJavaScript(String.format("alert('%s')", s));
+            return;
         }
 
         this.running = true;
 
         //首先获取目标table
         List<List<String>> rows = doCrawler();
+        if (rows.isEmpty()) return;
+
         Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
         int pageNo = configPanel.getPageNo();
         String goToExpression = configPanel.getGoToExpression();
         boolean asyncFlag = this.configPanel.isAsyncPage();
 
         for (int j = 0; j < pageNo; j++) {
-            this.browser.executeJavaScriptAndReturnValue(goToExpression.replace("$1", (j + 2) + ""));
-            if(asyncFlag){ //当table是ajax动态更新时,执行
+            this.browser.executeJavaScript(goToExpression.replace("$1", (j + 2) + ""));
+            if (asyncFlag) { //当table是ajax动态更新时,执行
                 asyncPage();
-            }else {
+            } else {
                 syncPage();
             }
         }
     }
 
-    private void syncPage(){
+    private void syncPage() {
         while (block) {//保证页面加载完成后,再进行下次的抓取.
             ThreadUtil.sleep(this.configPanel.getSleep());
         }
         block = true;
     }
 
-    private void asyncPage(){
+    private void asyncPage() {
         ThreadUtil.sleep(configPanel.getSleep());
-        List<List<String>>  rows = doCrawler();
-        rows.remove(0);//去掉表头
+        List<List<String>> rows = doCrawler();
+        if (rows.size() > 0)
+            rows.remove(0);//去掉表头
         Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
     }
 
@@ -106,8 +109,8 @@ public class TableCrawler implements  Crawler {
     public List<List<String>> doCrawler() {
         DOMElement element = branchPanel.getLockedElement();
 
-        if(element == null){
-            browser.executeJavaScript(String.format("请选择要抓取的表格"));
+        if (element == null) {
+            browser.executeJavaScript(String.format("alert('%s')", "请选择要抓取的表格"));
             return Collections.emptyList();
         }
 
@@ -136,12 +139,13 @@ public class TableCrawler implements  Crawler {
             }
         }
         this.count();
-        LOGGER.info("已抓取第[{}]页", this.getCount());
+        configPanel.redrawCount(getCount());
+        LOGGER.info("已抓取第[{}]页", getCount());
         return rows;
     }
 
     @Override
     public void unblock() {
-        this.block = false ;
+        this.block = false;
     }
 }

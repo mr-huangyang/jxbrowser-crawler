@@ -17,6 +17,7 @@ public class CrawlerConfigPanel extends JPanel  {
     private JTextField pageNo = new JTextField(4);
     private JTextField internal = new JTextField(4);
     private JTextField fileName = new JTextField(20);
+    private JLabel countLabel = new JLabel("0");
 
     private JRadioButton asyncType = new JRadioButton("Ajax");
 
@@ -68,10 +69,21 @@ public class CrawlerConfigPanel extends JPanel  {
         add(fileName);
 
         add(button);
-
+        add(countLabel);
+        countLabel.setBorder(BorderFactory.createEtchedBorder());
 
         button.addActionListener(e->{
-            this.crawler.start();
+            new Thread(()->{
+                this.crawler.start();
+            }).start();
+        });
+    }
+
+    public void redrawCount(Integer count){
+        SwingUtilities.invokeLater(()->{
+            countLabel.setText(count.toString());
+            countLabel.validate();
+            countLabel.repaint();
         });
     }
 
