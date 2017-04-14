@@ -61,7 +61,7 @@ public class ElementBranchPanel extends JPanel {
             for (int i = 0; i < size; i++) {
                 int index = size - i - 1;
                 JLabel label = new JLabel(nodes.get(index).getNodeName().concat("/"));
-                label.addMouseListener(new ClickListenerImpl(this, index, i));
+                label.addMouseListener(new HtmlLabelMouseListenerImpl(this, index, i));
                 add(label);
             }
             validate();
@@ -76,13 +76,13 @@ public class ElementBranchPanel extends JPanel {
         return this.nodes.get(this.clickedIndex).getElement();
     }
 
-    private static class ClickListenerImpl implements MouseListener {
+    private static class HtmlLabelMouseListenerImpl implements MouseListener {
 
         private int targetIndex;
         private int componentIndex;
         private ElementBranchPanel context;
 
-        public ClickListenerImpl(ElementBranchPanel branchPanel, int targetIndex, int componentIndex) {
+        public HtmlLabelMouseListenerImpl(ElementBranchPanel branchPanel, int targetIndex, int componentIndex) {
             this.targetIndex = targetIndex;
             this.context = branchPanel;
             this.componentIndex = componentIndex;
