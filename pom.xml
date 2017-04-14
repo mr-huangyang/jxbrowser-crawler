@@ -7,6 +7,7 @@
     <groupId>longhui.iverson</groupId>
     <artifactId>crawler</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
     <properties>
         <jdk.version>1.8</jdk.version>
         <logback.version>1.1.3</logback.version>

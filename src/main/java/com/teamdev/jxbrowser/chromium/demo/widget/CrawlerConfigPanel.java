@@ -11,13 +11,15 @@ import java.awt.*;
  */
 public class CrawlerConfigPanel extends JPanel  {
 
+    private static  final  String TIP_PATTERN = "已抓取第%s页";
+
     private JTextField sft = new JTextField(4);
     private JTextField slt = new JTextField(4);
     private JTextField goTo = new JTextField(15);
     private JTextField pageNo = new JTextField(4);
     private JTextField internal = new JTextField(4);
     private JTextField fileName = new JTextField(20);
-    private JLabel countLabel = new JLabel("0");
+    private JLabel countLabel = new JLabel(String.format(TIP_PATTERN,0));
 
     private JRadioButton asyncType = new JRadioButton("Ajax");
 
@@ -81,7 +83,7 @@ public class CrawlerConfigPanel extends JPanel  {
 
     public void redrawCount(Integer count){
         SwingUtilities.invokeLater(()->{
-            countLabel.setText(count.toString());
+            countLabel.setText( String.format(TIP_PATTERN,  count.toString()));
             countLabel.validate();
             countLabel.repaint();
         });

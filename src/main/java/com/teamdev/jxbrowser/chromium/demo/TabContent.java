@@ -9,6 +9,7 @@ package com.teamdev.jxbrowser.chromium.demo;
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
 import com.teamdev.jxbrowser.chromium.demo.crawler.TableCrawler;
 import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
+import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
 import com.teamdev.jxbrowser.chromium.demo.vo.DOMElementWrapper;
 import com.teamdev.jxbrowser.chromium.demo.widget.CrawlerConfigPanel;
 import com.teamdev.jxbrowser.chromium.demo.widget.ElementBranchPanel;
@@ -49,6 +50,7 @@ public class TabContent extends JPanel  {
         this.browserView = browserView;
 
         branchContainer = new ElementBranchPanel();
+        branchContainer.setPreferredSize(new Dimension(1000,70));
         configPanel = new CrawlerConfigPanel();
         tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
         configPanel.setCrawler(tableCrawler);
@@ -176,6 +178,7 @@ public class TabContent extends JPanel  {
 
                 SwingUtilities.invokeLater(()->{
 
+                   // ThreadUtil.sleep(1000);//阻塞,以等候动态渲染的元素完成加载
                     java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
                     nodes.forEach(t -> {
                         addOnclickListener(t);
