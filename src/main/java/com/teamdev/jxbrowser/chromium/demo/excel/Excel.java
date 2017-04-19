@@ -46,12 +46,13 @@ public class Excel {
     }
 
 
-    public void saveOne(List<String> cells) {
+    public Excel saveOne(List<String> cells) {
 
-        if(cells==null || cells.isEmpty()) return ;
+        if(cells==null || cells.isEmpty()) return this;
         Workbook workBook = getWorkBook(fileName);
         save(workBook,cells);
         close(workBook);
+        return this;
     }
 
     private void save(Workbook workBook ,List<String> cells){
@@ -76,13 +77,14 @@ public class Excel {
         }
     }
 
-    public void save(List<List<String>> rows) {
-        if(rows==null || rows.isEmpty()) return ;
+    public Excel save(List<List<String>> rows) {
+        if(rows==null || rows.isEmpty()) return this;
         Workbook workBook = getWorkBook(fileName);
         for (int i = 0 ; i < rows.size();i++){
            save(workBook,rows.get(i));
         }
         close(workBook);
+        return this;
     }
 
     private static Workbook getWorkBook(String fileName) {
