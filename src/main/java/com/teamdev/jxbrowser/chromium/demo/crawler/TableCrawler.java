@@ -67,6 +67,7 @@ public class TableCrawler implements Crawler {
                 syncPage();
             }
         }
+        this.browser.executeJavaScript(String.format("alert('%s')","哈里路呀,抓取完毕!"));
     }
 
     private void syncPage() {

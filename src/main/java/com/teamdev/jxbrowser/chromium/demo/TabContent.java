@@ -9,6 +9,7 @@ package com.teamdev.jxbrowser.chromium.demo;
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
 import com.teamdev.jxbrowser.chromium.demo.crawler.TableCrawler;
 import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
+import com.teamdev.jxbrowser.chromium.demo.util.ThreadPool;
 import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
 import com.teamdev.jxbrowser.chromium.demo.vo.DOMElementWrapper;
 import com.teamdev.jxbrowser.chromium.demo.widget.CrawlerConfigPanel;
@@ -176,14 +177,11 @@ public class TabContent extends JPanel  {
             @Override
             public void onDocumentLoadedInFrame(FrameLoadEvent event) {
 
-                SwingUtilities.invokeLater(()->{
-
-                   // ThreadUtil.sleep(1000);//阻塞,以等候动态渲染的元素完成加载
+                ThreadPool.invoke(()->{
                     java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
                     nodes.forEach(t -> {
                         addOnclickListener(t);
                     });
-
                     boolean state = tableCrawler.isRunning();
                     if (state) {
                         List<List<String>> rows= tableCrawler.doCrawler();

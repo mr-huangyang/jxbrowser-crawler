@@ -1,6 +1,7 @@
 package com.teamdev.jxbrowser.chromium.demo.widget;
 
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
+import com.teamdev.jxbrowser.chromium.demo.util.ThreadPool;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -82,7 +83,7 @@ public class CrawlerConfigPanel extends JPanel  {
     }
 
     public void redrawCount(Integer count){
-        SwingUtilities.invokeLater(()->{
+        ThreadPool.invoke(()->{
             countLabel.setText( String.format(TIP_PATTERN,  count.toString()));
             countLabel.validate();
             countLabel.repaint();
@@ -108,7 +109,10 @@ public class CrawlerConfigPanel extends JPanel  {
 
 
     public int getSleep(){
-        return Integer.valueOf(internal.getText()) * 1000 ;
+        String text = internal.getText();
+        if(StringUtils.isBlank(text))
+            text = "1" ;
+        return Integer.valueOf(text) * 1000 ;
     }
 
     public String getFileName() {
