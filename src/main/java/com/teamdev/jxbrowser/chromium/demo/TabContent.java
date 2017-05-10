@@ -9,6 +9,8 @@ package com.teamdev.jxbrowser.chromium.demo;
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
 import com.teamdev.jxbrowser.chromium.demo.crawler.TableCrawler;
 import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
+import com.teamdev.jxbrowser.chromium.demo.facade.CrawlerFacade;
+import com.teamdev.jxbrowser.chromium.demo.facade.TableCrawlerFacadeImpl;
 import com.teamdev.jxbrowser.chromium.demo.util.ThreadPool;
 import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
 import com.teamdev.jxbrowser.chromium.demo.vo.DOMElementWrapper;
@@ -44,6 +46,7 @@ public class TabContent extends JPanel  {
     private final CrawlerConfigPanel configPanel;
 
     private final Crawler tableCrawler ;
+    private final CrawlerFacade crawlerFacade ;
 
 
     public TabContent(final BrowserView browserView) {
@@ -54,7 +57,8 @@ public class TabContent extends JPanel  {
         branchContainer.setPreferredSize(new Dimension(1000,70));
         configPanel = new CrawlerConfigPanel();
         tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
-        configPanel.setCrawler(tableCrawler);
+        crawlerFacade = new TableCrawlerFacadeImpl(tableCrawler,browserView.getBrowser(),configPanel);
+        configPanel.setCrawler(crawlerFacade);
 
         addBrowserLoadListener();
         browserContainer = createBrowserContainer();
@@ -182,12 +186,9 @@ public class TabContent extends JPanel  {
                     nodes.forEach(t -> {
                         addOnclickListener(t);
                     });
-                    boolean state = tableCrawler.isRunning();
+                    boolean state = crawlerFacade.isRunning();
                     if (state) {
-                        List<List<String>> rows= tableCrawler.doCrawler();
-                        rows.remove(0);//后续保存时去掉表头
-                        saveRows(rows);
-                        tableCrawler.unblock();
+                        crawlerFacade.crawl();
                     }
                 });
 
@@ -240,8 +241,5 @@ public class TabContent extends JPanel  {
 
     }
 
-    private void saveRows(List<List<String>> rows) {
-        Excel.getFile(configPanel.getFileName() + ".xlsx").save(rows);
-    }
 
 }

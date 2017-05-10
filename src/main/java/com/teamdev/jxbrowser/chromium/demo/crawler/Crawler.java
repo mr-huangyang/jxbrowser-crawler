@@ -1,5 +1,7 @@
 package com.teamdev.jxbrowser.chromium.demo.crawler;
 
+import com.teamdev.jxbrowser.chromium.demo.config.CrawlerConfig;
+
 import java.util.List;
 
 /**
@@ -7,18 +9,10 @@ import java.util.List;
  */
 public interface Crawler {
 
-    void start();
-
-    void count();
-
-    int getCount();
-
-    boolean isRunning();
-
-    void stop();
+    boolean start();
 
     List<List<String>> doCrawler();
 
-    void unblock();
+    CrawlerConfig getConfig();
 
 }

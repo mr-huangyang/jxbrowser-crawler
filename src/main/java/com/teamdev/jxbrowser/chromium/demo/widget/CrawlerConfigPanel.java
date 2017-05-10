@@ -1,11 +1,14 @@
 package com.teamdev.jxbrowser.chromium.demo.widget;
 
+import com.teamdev.jxbrowser.chromium.demo.config.CrawlerConfig;
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
+import com.teamdev.jxbrowser.chromium.demo.facade.CrawlerFacade;
 import com.teamdev.jxbrowser.chromium.demo.util.ThreadPool;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -24,7 +27,9 @@ public class CrawlerConfigPanel extends JPanel  {
 
     private JRadioButton asyncType = new JRadioButton("Ajax");
 
-    private Crawler crawler ;
+    private CrawlerFacade crawler ;
+
+    private CrawlerConfig config ;
 
     public CrawlerConfigPanel(){
         init();
@@ -38,6 +43,7 @@ public class CrawlerConfigPanel extends JPanel  {
     }
 
     private void init(){
+        config = new CrawlerConfig();
         setBorder(BorderFactory.createTitledBorder("页面表格数据抓取配置"));
 
         setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -60,7 +66,7 @@ public class CrawlerConfigPanel extends JPanel  {
         add(new JLabel(","));
 
         add(asyncType);
-        add(new JLabel(",翻页数:"));
+        add(new JLabel(",总页数:"));
         add(pageNo);
 
         add(new JLabel("翻页间隔:"));
@@ -90,43 +96,20 @@ public class CrawlerConfigPanel extends JPanel  {
         });
     }
 
-    public void setCrawler(Crawler crawler) {
+    public CrawlerConfig getConfig(){
+        config.setSkipFirst(Integer.valueOf(this.sft.getText()));
+        config.setSkipLast(Integer.valueOf(this.slt.getText()));
+        config.setGotoJs(goTo.getText());
+        config.setFileName(fileName.getText());
+        config.setSleepTime(Integer.valueOf(internal.getText()) * 1000);
+        config.setAsyn(asyncType.isSelected());
+        config.setNextTimes(Integer.valueOf(this.pageNo.getText()));
+        return config;
+    }
+
+    public void setCrawler(CrawlerFacade crawler) {
         this.crawler = crawler;
     }
 
-    public int getSkipFirst(){
-        return Integer.valueOf(this.sft.getText());
-    }
 
-    public int getSkipLast(){
-        return Integer.valueOf(this.slt.getText());
-    }
-
-
-    public int getPageNo(){
-        return Integer.valueOf(this.pageNo.getText());
-    }
-
-
-    public int getSleep(){
-        String text = internal.getText();
-        if(StringUtils.isBlank(text))
-            text = "1" ;
-        return Integer.valueOf(text) * 1000 ;
-    }
-
-    public String getFileName() {
-        return this.fileName.getText();
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName.setText(fileName);
-    }
-    public String getGoToExpression(){
-        return goTo.getText();
-    }
-
-    public boolean isAsyncPage() {
-        return asyncType.isSelected();
-    }
 }
