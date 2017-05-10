@@ -45,7 +45,6 @@ public class TabContent extends JPanel  {
     private final ElementBranchPanel branchContainer;
     private final CrawlerConfigPanel configPanel;
 
-    private final Crawler tableCrawler ;
     private final CrawlerFacade crawlerFacade ;
 
 
@@ -56,7 +55,7 @@ public class TabContent extends JPanel  {
         branchContainer = new ElementBranchPanel();
         branchContainer.setPreferredSize(new Dimension(1000,70));
         configPanel = new CrawlerConfigPanel();
-        tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
+        Crawler tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
         crawlerFacade = new TableCrawlerFacadeImpl(tableCrawler,browserView.getBrowser(),configPanel);
         configPanel.setCrawler(crawlerFacade);
 
