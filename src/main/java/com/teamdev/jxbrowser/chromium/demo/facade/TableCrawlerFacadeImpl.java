@@ -3,9 +3,11 @@ package com.teamdev.jxbrowser.chromium.demo.facade;
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.demo.config.CrawlerConfig;
 import com.teamdev.jxbrowser.chromium.demo.crawler.Crawler;
+import com.teamdev.jxbrowser.chromium.demo.crawler.TableCrawler;
 import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
 import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
 import com.teamdev.jxbrowser.chromium.demo.widget.CrawlerConfigPanel;
+import com.teamdev.jxbrowser.chromium.demo.widget.ElementBranchPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,24 +27,52 @@ public class TableCrawlerFacadeImpl implements CrawlerFacade {
     private PageCrawlingStrategy asyncPageStrategy;
 
 
-    public TableCrawlerFacadeImpl(Crawler crawler, Browser browser, CrawlerConfigPanel configPanel) {
-        this.tableCrawler = crawler;
+    public TableCrawlerFacadeImpl(Browser browser , ElementBranchPanel branchPanel, CrawlerConfigPanel configPanel) {
         this.browser = browser;
         this.configPanel = configPanel;
+        this.tableCrawler = new TableCrawler(browser,branchPanel,configPanel);
         this.syncPageStrategy = new SyncPageStrategy(this);
         this.asyncPageStrategy = new AsyncPageStrategy(this);
     }
 
     @Override
     public void crawl() {
-        boolean async = tableCrawler.getConfig().isAsyn();
-        getPageCrawlingStrategy(async).crawl();
+        if(running){
+            boolean async = tableCrawler.getConfig().isAsyn();
+            getPageCrawlingStrategy(async).crawl();
+        }
+    }
+
+
+    @Override
+    public void start() {
+        running = tableCrawler.start();
+        if (running) {
+            CrawlerConfig config = configPanel.getConfig();
+            counter = config.getStartPage();
+            boolean async = config.isAsyn();
+            getPageCrawlingStrategy(async).start();
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
     }
 
     private synchronized void getAndSave(String fileName) {
-        List<List<String>> rows = tableCrawler.doCrawler();//get data in table
-        if (counter > 1) {
-            rows.remove(0);//remove the head in table when not the first page
+        CrawlerConfig config = configPanel.getConfig();
+        //get data in table
+        List<List<String>> rows = tableCrawler.doCrawler();
+        if(rows.isEmpty()){
+            running = false ;
+            LOGGER.info("=======no more data found,i'm going to shutdown========");
+            doJs(config.getGotoJs(),counter + "");
+            return ;
+        }
+        if (counter > config.getStartPage()) {
+            //remove the head in table when not the first page
+            rows.remove(0);
         }
         Excel.getFile(fileName).save(rows);//saving data
         configPanel.redrawCount(counter);
@@ -55,30 +85,16 @@ public class TableCrawlerFacadeImpl implements CrawlerFacade {
         return syncPageStrategy;
     }
 
-    @Override
-    public void start() {
-        running = tableCrawler.start();
-        if (running) {
-            counter = 1;
-            boolean async = tableCrawler.getConfig().isAsyn();
-            getPageCrawlingStrategy(async).start();
-        }
-    }
-
     private synchronized void doJs(String js, String param) {
         browser.executeJavaScriptAndReturnValue(js.replace("$1", param));//
     }
 
 
-    @Override
-    public boolean isRunning() {
-        return running;
-    }
-
+   /**** inner class ****/
 
     private abstract class PageCrawlingStrategy {
-        abstract void crawl();
-        abstract void start();
+       public abstract void crawl();
+       public abstract void start();
     }
 
     private class SyncPageStrategy extends PageCrawlingStrategy {
@@ -90,25 +106,25 @@ public class TableCrawlerFacadeImpl implements CrawlerFacade {
 
         @Override
         public void crawl() {
-            CrawlerConfig config = tableCrawler.getConfig();
-            int nextTimes = config.getNextTimes();
+            CrawlerConfig config = configPanel.getConfig();
+            int nextTimes = config.getLastPage();
             String fileName = config.getFileName() + ".xlsx";
             getAndSave(fileName);
 
             if (counter > nextTimes) {
-                doJs("alert('$1')", "哈里路呀,抓取完毕!");
+                doJs("alert('$1')", "哈里路呀,抓取完毕!文件路径:" + Excel.getDir() + fileName);
                 return;
             }
             //next page
             String gotoJs = config.getGotoJs();
-            doJs(gotoJs, counter + "");
             ThreadUtil.sleep(config.getSleepTime());
+            doJs(gotoJs, counter + "");
         }
 
         @Override
-        void start() {
+        public void start() {
             String gotoJs = tableCrawler.getConfig().getGotoJs();
-            doJs(gotoJs, "1");//todo
+            doJs(gotoJs, counter+"");
         }
     }
 
@@ -121,8 +137,8 @@ public class TableCrawlerFacadeImpl implements CrawlerFacade {
 
         @Override
         public void crawl() {
-            CrawlerConfig config = tableCrawler.getConfig();
-            int nextTimes = config.getNextTimes();
+            CrawlerConfig config = configPanel.getConfig();
+            int nextTimes = config.getLastPage();
             String fileName = config.getFileName() + ".xlsx";
             getAndSave(fileName);
 
@@ -134,11 +150,11 @@ public class TableCrawlerFacadeImpl implements CrawlerFacade {
                 ThreadUtil.sleep(config.getSleepTime());
                 getAndSave(fileName);
             }
-            doJs("alert('$1')", "哈里路呀,抓取完毕!");
+            doJs("alert('$1')", "哈里路呀,抓取完毕!文件路径:" + Excel.getDir() + fileName);
         }
 
         @Override
-        void start() {
+        public void start() {
             crawl();
         }
     }

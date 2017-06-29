@@ -5,7 +5,8 @@ public class CrawlerConfig {
     private int skipFirst ; //skip pages in head side
     private int skipLast; // skip pages in tail side
     private String gotoJs; // js for going to next page
-    private int nextTimes; // times to change page
+    private int startPage; //
+    private int lastPage;
     private int sleepTime ; // sleep for some time
     private String fileName; // data stored in it
 
@@ -35,12 +36,20 @@ public class CrawlerConfig {
         this.gotoJs = gotoJs;
     }
 
-    public int getNextTimes() {
-        return nextTimes;
+    public int getStartPage() {
+        return startPage;
     }
 
-    public void setNextTimes(int nextTimes) {
-        this.nextTimes = nextTimes;
+    public void setStartPage(int startPage) {
+        this.startPage = startPage;
+    }
+
+    public int getLastPage() {
+        return lastPage;
+    }
+
+    public void setLastPage(int lastPage) {
+        this.lastPage = lastPage;
     }
 
     public int getSleepTime() {

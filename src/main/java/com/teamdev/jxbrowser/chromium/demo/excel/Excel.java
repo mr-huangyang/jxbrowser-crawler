@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class Excel {
 
-    private final static String dir = "/tmp/excel/";
+    private final static String dir ;
 
     private final static Logger LOGGER = LoggerFactory.getLogger(Excel.class);
 
@@ -28,6 +28,7 @@ public class Excel {
     private String fileName;
 
     static {
+        dir = System.getProperty("user.home") + "/Documents/jx-crawler/";
         if (Files.notExists(Paths.get(dir))) {
             try {
                 Files.createDirectories(Paths.get(dir));
@@ -120,4 +121,7 @@ public class Excel {
         Files.delete(Paths.get(dir + fileName));
     }
 
+    public static String getDir(){
+        return dir   ;
+    }
 }

@@ -15,15 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CrawlerConfigPanel extends JPanel  {
 
-    private static  final  String TIP_PATTERN = "已抓取第%s页";
-
-    private JTextField sft = new JTextField(4);
-    private JTextField slt = new JTextField(4);
-    private JTextField goTo = new JTextField(15);
-    private JTextField pageNo = new JTextField(4);
-    private JTextField internal = new JTextField(4);
-    private JTextField fileName = new JTextField(20);
-    private JLabel countLabel = new JLabel(String.format(TIP_PATTERN,0));
+    private JTextField sft = new JTextField(2);
+    private JTextField slt = new JTextField(2);
+    private JTextField goTo = new JTextField(30);
+    private JTextField pageSetting = new JTextField(8);
+    private JTextField internal = new JTextField(2);
+    private JTextField fileName = new JTextField(15);
+    private JButton button = new JButton("GO");
 
     private JRadioButton asyncType = new JRadioButton("Ajax");
 
@@ -39,6 +37,14 @@ public class CrawlerConfigPanel extends JPanel  {
         if(StringUtils.isBlank(fileName.getText())){
             return "文件名称必须填写";
         }
+        if(StringUtils.isBlank(goTo.getText())){
+            return "翻页js表达必须填写";
+        }
+        String text = pageSetting.getText();
+        boolean isRight = text.matches("^\\d+-\\d+$");
+        if(!isRight){
+            return "起始页未正确设置,格式如:1-100";
+        }
         return "";
     }
 
@@ -47,10 +53,9 @@ public class CrawlerConfigPanel extends JPanel  {
         setBorder(BorderFactory.createTitledBorder("页面表格数据抓取配置"));
 
         setLayout(new FlowLayout(FlowLayout.LEADING));
-        JButton button = new JButton("抓取Table数据");
         sft.setText("0");
         slt.setText("0");
-        pageNo.setText("0");
+        pageSetting.setText("格式:1-100");
 
         add(new JLabel("略过前:"));
         add(sft);
@@ -66,20 +71,18 @@ public class CrawlerConfigPanel extends JPanel  {
         add(new JLabel(","));
 
         add(asyncType);
-        add(new JLabel(",总页数:"));
-        add(pageNo);
+        add(new JLabel(",起始页:"));
+        add(pageSetting);
 
         add(new JLabel("翻页间隔:"));
         internal.setText("1");
         add(internal);
         add(new JLabel("秒,"));
 
-        add(new JLabel("文件名称:"));
+        add(new JLabel("文件名:"));
         add(fileName);
 
         add(button);
-        add(countLabel);
-        countLabel.setBorder(BorderFactory.createEtchedBorder());
 
         button.addActionListener(e->{
             new Thread(()->{
@@ -89,10 +92,10 @@ public class CrawlerConfigPanel extends JPanel  {
     }
 
     public void redrawCount(Integer count){
-        ThreadPool.invoke(()->{
-            countLabel.setText( String.format(TIP_PATTERN,  count.toString()));
-            countLabel.validate();
-            countLabel.repaint();
+        SwingUtilities.invokeLater(()->{
+            button.setText( String.format("GO(P-%s)",  count.toString()));
+            button.validate();
+            button.repaint();
         });
     }
 
@@ -101,9 +104,13 @@ public class CrawlerConfigPanel extends JPanel  {
         config.setSkipLast(Integer.valueOf(this.slt.getText()));
         config.setGotoJs(goTo.getText());
         config.setFileName(fileName.getText());
-        config.setSleepTime(Integer.valueOf(internal.getText()) * 1000);
+        config.setSleepTime( (int) (Double.valueOf(internal.getText()) * 1000));
         config.setAsyn(asyncType.isSelected());
-        config.setNextTimes(Integer.valueOf(this.pageNo.getText()));
+
+        String[] settings = pageSetting.getText().replace("格式:","").split("-");
+        config.setStartPage(Integer.valueOf(settings[0]));
+        config.setLastPage(Integer.valueOf(settings[1]));
+
         return config;
     }
 

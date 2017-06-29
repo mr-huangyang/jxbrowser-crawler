@@ -55,8 +55,7 @@ public class TabContent extends JPanel  {
         branchContainer = new ElementBranchPanel();
         branchContainer.setPreferredSize(new Dimension(1000,70));
         configPanel = new CrawlerConfigPanel();
-        Crawler tableCrawler = new TableCrawler(browserView.getBrowser(),branchContainer,configPanel);
-        crawlerFacade = new TableCrawlerFacadeImpl(tableCrawler,browserView.getBrowser(),configPanel);
+        crawlerFacade = new TableCrawlerFacadeImpl(browserView.getBrowser(),branchContainer,configPanel);
         configPanel.setCrawler(crawlerFacade);
 
         addBrowserLoadListener();
@@ -181,14 +180,14 @@ public class TabContent extends JPanel  {
             public void onDocumentLoadedInFrame(FrameLoadEvent event) {
 
                 ThreadPool.invoke(()->{
-                    java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
-                    nodes.forEach(t -> {
-                        addOnclickListener(t);
-                    });
-                    boolean state = crawlerFacade.isRunning();
-                    if (state) {
-                        crawlerFacade.crawl();
+                    boolean running = crawlerFacade.isRunning();
+                    if(!running){//
+                        java.util.List<DOMNode> nodes = event.getBrowser().getDocument().getDocumentElement().getChildren();
+                        nodes.forEach(t -> {
+                            addOnclickListener(t);
+                        });
                     }
+                    crawlerFacade.crawl();
                 });
 
             }
