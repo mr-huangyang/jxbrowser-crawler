@@ -69,11 +69,11 @@ public class ElementBranchPanel extends JPanel {
         });
     }
 
-    public DOMElement getLockedElement() {
+    public String getLockedElementXpath() {
         if (this.nodes.isEmpty()) {
-            return null;
+            return  null;
         }
-        return this.nodes.get(this.clickedIndex).getElement();
+        return this.nodes.get(this.clickedIndex).getXpath();
     }
 
     private static class HtmlLabelMouseListenerImpl implements MouseListener {

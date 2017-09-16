@@ -2,8 +2,6 @@ package com.teamdev.jxbrowser.chromium.demo.crawler;
 
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.demo.config.CrawlerConfig;
-import com.teamdev.jxbrowser.chromium.demo.excel.Excel;
-import com.teamdev.jxbrowser.chromium.demo.util.ThreadUtil;
 import com.teamdev.jxbrowser.chromium.demo.util.XpathUtility;
 import com.teamdev.jxbrowser.chromium.demo.widget.CrawlerConfigPanel;
 import com.teamdev.jxbrowser.chromium.demo.widget.ElementBranchPanel;
@@ -11,8 +9,6 @@ import com.teamdev.jxbrowser.chromium.dom.By;
 import com.teamdev.jxbrowser.chromium.dom.DOMDocument;
 import com.teamdev.jxbrowser.chromium.dom.DOMElement;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,15 +42,11 @@ public class TableCrawler implements Crawler {
 
     @Override
     public List<List<String>> doCrawler() {
-        DOMElement element = branchPanel.getLockedElement();
-
-        if (element == null) {
+        String table = branchPanel.getLockedElementXpath();
+        if (table == null) {
             browser.executeJavaScript(String.format("alert('%s')", "请选择要抓取的表格"));
             return Collections.emptyList();
         }
-
-        String table = XpathUtility.xpath(element);
-
         DOMDocument document = browser.getDocument();
         DOMElement dataElement = document.findElement(By.xpath(table));
         java.util.List<DOMElement> tr = dataElement.findElements(By.tagName("tr"));
